@@ -20,131 +20,113 @@
 		CHARIZARD: "Charizard"
 	};
 
-	function Attack(
-			name,
-			damage,
-			energyCost) {
-		this.name = name;
-		this.damage = damage;
-		this.energyCost = energyCost;
+	class Attack {
+		constructor (name, damage) {
+			this.name = name;
+			this.damage = damage;
+		}
 	}
 
-	function AttackCost(
-			energyType,
-			cost) {
-		this.energyType = energyType;
-		this.cost = cost;
+	class Weakness {
+		constructor (energyType, multiplier) {
+			this.energyType = energyType;
+			this.multiplier = multiplier;
+		}
 	}
 
-	function Weakness(
-			energyType,
-			multiplier) {
-		this.energyType = energyType;
-		this.multiplier = multiplier;
+	class Resistance {
+		constructor (energyType, value) {
+			this.energyType = energyType;
+			this.value = value;
+		}
 	}
 
-	function Resistance(
-			energyType,
-			value) {
-		this.energyType = energyType;
-		this.value = value;
-	}
-
-	function Pokemon(
-			name, 
-			energyType, 
-			hitpoints,
-			health,
-			evolvesFrom,
-			stage,
-			attacks,
-			weakness,
-			resistance) {
-	    this.name = name;  
-	    this.energyType = energyType;
-	    this.hitpoints = hitpoints;
-	    this.health = hitpoints;
-	    this.evolvesFrom = evolvesFrom;
-	    this.stage = stage;
-	    this.attacks = attacks;
-	    this.weakness = weakness;
-	    this.resistance = resistance;
-	    this.doAttack = function(attack, target) {
+	class Pokemon { 
+		constructor(name, energyType, hitpoints, stage, evolvesFrom, attacks, weakness, resistance) {
+		    this.name = name;  
+		    this.energyType = energyType;
+		    this.hitpoints = hitpoints;
+		    this.health = hitpoints;
+		    this.evolvesFrom = evolvesFrom;
+		    this.stage = stage;
+		    this.attacks = attacks;
+		    this.weakness = weakness;
+		    this.resistance = resistance;
+		}
+	    
+	    doAttack(attack, target) {
 	    	if (attack instanceof Attack && target instanceof Pokemon) {
+	    		console.log(this.name + " attacks " + target.name + " with " + attack.name + " (" + attack.damage + ")");
+
 	    		var damage = attack.damage;
 
 	    		// calculate weakness modifier
 	    		if ((typeof target.weakness !== "undefined") && (target.weakness !== null)) {
 	    			if (this.energyType == target.weakness.energyType) {
 	    				damage = (damage*target.weakness.multiplier);
+	    				console.log("damage after weakness: " + damage);
 	    			}
 	    		}
 	    		// calculate resistance modifier
 	    		if ((typeof target.resistance !== "undefined") && (target.resistance !== null)) {
 	    			if (this.energyType == target.resistance.energyType) {
 	    				damage = (damage-target.resistance.value);
+	    				console.log("damage after resistance: " + damage);
 	    			}
 	    		}	    		
 	    		// adjust current hitpoints
-	    		this.health = this.health-damage;
-	    		if (this.health < 0) {
-	    			this.health = 0;
-	    		}
+	    		target.takeDamage(damage);
+	    	} else {
+	    		console.log("invalid attack");
 	    	}
-	    };
+	    }
+
+	    takeDamage(damage) {
+	    	console.log("start health: " + this.health);
+    		this.health = this.health-damage;
+    		if (this.health < 0) {
+    			this.health = 0;
+    		}
+    		console.log("end health: " + this.health);
+	    }
 	}
 
-	function Pikachu(name) {
-		Pokemon.call(this, name);
-		this.energyType = energyType.LIGHTNING;
-		this.hitpoints = 60;
-		this.stage = 1;
-		this.attacks = [
-			new Attack("Electric Ring", 50, [
-					new AttackCost(energyType.LIGHTNING, 1),
-					new AttackCost(energyType.COLORLESS, 2)
-				]
-			),
-			new Attack("Pika Punch", 20, [
-					new AttackCost(energyType.COLORLESS, 2)
-				]
-			)
-		];
-		this.weakness = new Weakness(energyType.FIGHTING, "1.5");
-		this.resistance = new Resistance(energyType.FIGHTING, "20");
+	class Pikachu extends Pokemon {
+		constructor(name) {
+			const attacks = [
+				new Attack("Electric Ring", 50),
+				new Attack("Pika Punch", 20)
+			];
+			const weakness = new Weakness(energyType.FIRE, "1.5");
+			const resistance = new Resistance(energyType.FIGHTING, "20");
+
+			super(name, energyType.LIGHTNING, 60, 1, null, attacks, weakness, resistance);
+		}
 	}
 
-	function Charmeleon(name) {
-		Pokemon.call(this, name);
-		this.energyType = energyType.FIRE;
-		this.hitpoints = 70;
-		this.stage = 1;
-		this.attacks = [
-			new Attack("Flare", 30, [
-					new AttackCost(energyType.FIRE, 1),
-					new AttackCost(energyType.COLORLESS, 1)
-				]
-			)
-		];
-		this.weakness = new Weakness(energyType.WATER, "2");
-		this.resistance = new Resistance(energyType.FIRE, "20");		
+	class Charmeleon extends Pokemon {
+		constructor(name) {
+			const attacks = [
+				new Attack("Head Butt", 10),
+				new Attack("Flare", 30)
+			];
+			const weakness = new Weakness(energyType.WATER, "2");
+			const resistance = new Resistance(energyType.FIRE, "20");
+
+			super(name, energyType.FIRE, 60, 1, null, attacks, weakness, resistance);
+		}
 	}
 
-	function Charizard(name) {
-		Pokemon.call(this, name);
-		this.energyType = energyType.FIRE;
-		this.hitpoints = 120;
-		this.evolvesFrom = pokemon.CHARMELEON;
-		this.stage = 2;
-		this.attacks = [
-			new Attack("Fire Blast", 50, [
-					new AttackCost(energyType.FIRE, 2),
-					new AttackCost(energyType.COLORLESS, 1)
-				]
-			)
-		];
-		this.weakness = new Weakness(energyType.WATER, "1.5");
-		this.resistance = new Resistance(energyType.FIRE, "100");		
+	class Charizard extends Pokemon {
+		constructor(name) {
+			const attacks = [
+				new Attack("Fire Blast", 50)
+			];
+			const weakness = new Weakness(energyType.WATER, "1.5");
+			const resistance = new Resistance(energyType.FIRE, "100");
+
+			super(name, energyType.FIRE, 60, 1, null, attacks, weakness, resistance);
+		}
 	}
 
 
@@ -156,5 +138,8 @@
 
 	let mijnCharizard = new Charizard("mijnCharizard");
 	console.dir(mijnCharizard);
+
+
+	mijnCharmeleon.doAttack(mijnCharmeleon.attacks[0], mijnPickachu);
 
 })();
