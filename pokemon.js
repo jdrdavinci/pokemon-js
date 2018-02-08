@@ -15,7 +15,7 @@
 	};
 
 	const pokemon =	{
-		PICKACHU: "pickachu",
+		PICKACHU: "Pickachu",
 		CHARMELEON: "Charmeleon",
 		CHARIZARD: "Charizard"
 	};
@@ -54,7 +54,7 @@
 			name, 
 			energyType, 
 			hitpoints,
-			currentHitpoints,
+			health,
 			evolvesFrom,
 			stage,
 			attacks,
@@ -63,7 +63,7 @@
 	    this.name = name;  
 	    this.energyType = energyType;
 	    this.hitpoints = hitpoints;
-	    this.currentHitpoints = hitpoints;
+	    this.health = hitpoints;
 	    this.evolvesFrom = evolvesFrom;
 	    this.stage = stage;
 	    this.attacks = attacks;
@@ -74,16 +74,24 @@
 	    		var damage = attack.damage;
 
 	    		// calculate weakness modifier
-
+	    		if ((typeof target.weakness !== "undefined") && (target.weakness !== null)) {
+	    			if (this.energyType == target.weakness.energyType) {
+	    				damage = (damage*target.weakness.multiplier);
+	    			}
+	    		}
 	    		// calculate resistance modifier
-
+	    		if ((typeof target.resistance !== "undefined") && (target.resistance !== null)) {
+	    			if (this.energyType == target.resistance.energyType) {
+	    				damage = (damage-target.resistance.value);
+	    			}
+	    		}	    		
 	    		// adjust current hitpoints
-	    		this.currentHitpoints = this.currentHitpoints-damage;
-	    		if (this.currentHitpoints < 0) {
-	    			this.currentHitpoints = 0;
+	    		this.health = this.health-damage;
+	    		if (this.health < 0) {
+	    			this.health = 0;
 	    		}
 	    	}
-	    }
+	    };
 	}
 
 	function Pikachu(name) {
